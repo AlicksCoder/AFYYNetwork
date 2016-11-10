@@ -9,9 +9,13 @@
 #import "HCNetwork.h"
 #import "HCNetworkCache.h"
 #import "AFNetworkActivityIndicatorManager.h"
+#import <CommonCrypto/CommonHMAC.h>
+#import <SystemConfiguration/SystemConfiguration.h>
+#import <netdb.h>
+#import <arpa/inet.h>
 
 static AFHTTPSessionManager *_manager;
-static AFNetworkReachabilityStatus _status = -1;
+static AFNetworkReachabilityStatus _status = 0;
 static AFHTTPSessionManager *_webManager;
 
 @implementation HCNetwork
@@ -36,7 +40,7 @@ static AFHTTPSessionManager *_webManager;
     _webManager = manager;
 }
 
-#pragma mark --------------------- 网络请求 ---------------------
+#pragma mark -------------------------------- 网络请求 --------------------------------
 +(NSURLSessionDataTask *)GET:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure showHUD:(BOOL)showHUD{
     __block NSURLSessionDataTask *session = nil;
     
@@ -107,8 +111,9 @@ static AFHTTPSessionManager *_webManager;
     return session;
 }
 
-#pragma mark - 检查网络
+#pragma mark -------------------------------- 检查网络 --------------------------------
 +(void)checkNetworkStatus{
+    if ([HCNetwork connectedToNetwork]) _status = 1;
     AFNetworkReachabilityManager *mgr = [AFNetworkReachabilityManager sharedManager];
     [mgr setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
         _status = status;
@@ -139,6 +144,33 @@ static AFHTTPSessionManager *_webManager;
     return NO;
 }
 
+/// 神奇方法
++ (BOOL)connectedToNetwork {
+    // 创建零地址，0.0.0.0的地址表示查询本机的网络连接状态
+    struct sockaddr_in zeroAddress;
+    bzero(&zeroAddress, sizeof(zeroAddress));
+    zeroAddress.sin_len = sizeof(zeroAddress);
+    zeroAddress.sin_family = AF_INET;
+    // SCNetworkReachabilityCreateWithAddress：根据传入的IP地址测试连接状态，当为0.0.0.0时则可以查询本机的网络连接状态。
+    // 使用SCNetworkReachabilityCreateWithAddress：可以根据传入的网址地址测试连接状态
+    
+    // Recover reachability flags
+    SCNetworkReachabilityRef defaultRouteReachability = SCNetworkReachabilityCreateWithAddress(NULL, (struct sockaddr *)&zeroAddress);
+    SCNetworkReachabilityFlags flags;
+    
+    BOOL didRetrieveFlags = SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags);
+    CFRelease(defaultRouteReachability);
+    
+    if (!didRetrieveFlags) return NO;
+    
+    // kSCNetworkReachabilityFlagsReachable：能够连接网络
+    // kSCNetworkReachabilityFlagsConnectionRequired：能够连接网络，但是首先得建立连接过程
+    // kSCNetworkReachabilityFlagsIsWWAN：判断是否通过蜂窝网覆盖的连接
+    BOOL isReachable = ((flags & kSCNetworkFlagsReachable) != 0);
+    BOOL needsConnection = ((flags & kSCNetworkFlagsConnectionRequired) != 0);
+    return (isReachable && !needsConnection) ? YES : NO;
+    
+}
 
 
 #pragma mark -------------------------------- 清除磁盘网络缓存数据 --------------------------------
