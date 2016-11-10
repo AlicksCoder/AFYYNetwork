@@ -22,7 +22,7 @@
 }
 
 - (IBAction)btn:(id)sender {
-    
+     
     NSDictionary *dict = @{@"shop_id":@"189"}; //请求参数
     
     [HCNetwork WEBGET:@"http://siteinterface.360manager.cn/index.php/Content/getshopdetail" parameters:dict success:^(NSURLSessionDataTask *task, id responseObject) {

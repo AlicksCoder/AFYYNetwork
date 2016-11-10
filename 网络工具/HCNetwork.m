@@ -11,7 +11,7 @@
 #import "AFNetworkActivityIndicatorManager.h"
 
 static AFHTTPSessionManager *_manager;
-static AFNetworkReachabilityStatus _status = 1;
+static AFNetworkReachabilityStatus _status = -1;
 static AFHTTPSessionManager *_webManager;
 
 @implementation HCNetwork
@@ -25,7 +25,6 @@ static AFHTTPSessionManager *_webManager;
     manager.requestSerializer.timeoutInterval = HCRequestTimeout;
     _manager = manager;
     [HCNetwork WebGetReady];
-    
 }
 
 + (void)WebGetReady{
@@ -41,7 +40,7 @@ static AFHTTPSessionManager *_webManager;
 +(NSURLSessionDataTask *)GET:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure showHUD:(BOOL)showHUD{
     __block NSURLSessionDataTask *session = nil;
     
-    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure]) return session;
+    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure] && _status == AFNetworkReachabilityStatusNotReachable) return session;
     
     if(showHUD)  NSLog(@"显示 hud 改功能暂无，后续版本添加 加载中...");
     
@@ -72,7 +71,7 @@ static AFHTTPSessionManager *_webManager;
         }
     }
     
-    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure]) return session;
+    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure] && _status == AFNetworkReachabilityStatusNotReachable) return session;
     
     session = [_manager POST:URLString parameters:parameters progress:^(NSProgress * _Nonnull uploadProgress) {
     } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
@@ -94,7 +93,7 @@ static AFHTTPSessionManager *_webManager;
                          failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure
                          showHUD:(BOOL)showHUD{
     __block NSURLSessionDataTask *session = nil;
-    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure]) return session;
+    if ([HCNetwork doSomethingIfTheNetworkUnable:URLString parameters:parameters success:success failure:failure] && _status == AFNetworkReachabilityStatusNotReachable) return session;
     if(showHUD)  NSLog(@"显示 hud 改功能暂无，后续版本添加 加载中...");
     
     session = [_webManager GET:URLString parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
@@ -124,7 +123,12 @@ static AFHTTPSessionManager *_webManager;
 
 +(BOOL)doSomethingIfTheNetworkUnable:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure{
     if (_status == -1 || _status == 0) {
-        NSError *er = [NSError errorWithDomain:@"HCNetworkingErrorDomain" code:600 userInfo:@{NSLocalizedDescriptionKey:@"无法连接，当前网络状态是断网或者是未知网络！"}];
+        NSError *er;
+        if (_status == -1) {
+            er = [NSError errorWithDomain:@"com.HCNetwork.unkonwStatus" code:600 userInfo:@{NSLocalizedDescriptionKey:@"无法判断当前网络"}];
+        }else{
+            er = [NSError errorWithDomain:@"com.HCNetwork.unreacheStatus" code:601 userInfo:@{NSLocalizedDescriptionKey:@"当前无网络连接"}];
+        }
         failure ? failure(nil,er) : 0;
         id responseObject = [HCNetworkCache getCacheResponseObjectWithRequestUrl:URLString params:parameters];
         if (responseObject) {
