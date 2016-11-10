@@ -7,6 +7,7 @@
 //
 
 #import "HCNetworkCache.h"
+#import "YYCache.h"
 #import <CommonCrypto/CommonDigest.h>
 
 static YYCache *_yyCache;

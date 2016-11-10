@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "YYCache.h"
 /// 对 YYCache 的封装，使用与 HCNetwork 的数据缓存
 @interface HCNetworkCache : NSObject
 
