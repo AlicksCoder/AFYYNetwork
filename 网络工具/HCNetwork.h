@@ -90,3 +90,10 @@ static NSTimeInterval HCRequestTimeout = 30.0f;    ///请求超时时间
 + (void)removeAllObjectsWithBlock:(void(^)(void))block;
 
 @end
+
+/***  更新日志
+    0.01 - 添加无缓存请求
+ 
+ 
+ 
+ ***/
