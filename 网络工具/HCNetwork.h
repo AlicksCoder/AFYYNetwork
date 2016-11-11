@@ -15,7 +15,7 @@ static NSTimeInterval HCRequestTimeout = 30.0f;    ///请求超时时间
 @interface HCNetwork : NSObject
 
 /**
- GET请求 (没网络会加载缓存)
+ GET请求自动缓存 (没网络会加载缓存)
  */
 + (NSURLSessionDataTask *)GET:(NSString *)URLString
                             parameters:(id)parameters
@@ -24,7 +24,7 @@ static NSTimeInterval HCRequestTimeout = 30.0f;    ///请求超时时间
                                 showHUD:(BOOL)showHUD;
 
 /**
- POST 请求  useCache  是否先加载缓存，如果是，则先加载缓存，执行 success Block，网络加载成功之后，再一次加载 success block。 无论选择是否，断网情况下都会加载缓存。
+ POST 请求自动缓存  useCache  是否先加载缓存，如果是，则先加载缓存，执行 success Block，网络加载成功之后，再一次加载 success block。 无论选择是否，断网情况下都会加载缓存。
  @param useCache     是否先加载缓存，如果是，则先加载缓存，执行 success Block，网络加载成功之后，再一次加载 success block。 无论选择是否，断网情况下都会加载缓存。
  */
 + (NSURLSessionDataTask *)POST:(NSString *)URLString
@@ -47,6 +47,21 @@ static NSTimeInterval HCRequestTimeout = 30.0f;    ///请求超时时间
 
 
 
+/**
+ GET请求不处理缓存。不进行缓存。
+ */
++ (NSURLSessionDataTask *)GETNOCache:(NSString *)URLString
+                   parameters:(id)parameters
+                      success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
+                      failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;
+
+/**
+ POST 请求不处理缓存。不进行缓存。
+ */
++ (NSURLSessionDataTask *)POSTNOCache:(NSString *)URLString
+                    parameters:(id)parameters
+                       success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
+                       failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure;
 
 
 /** ----------------------------------------  提示栏  ---------------------------------------- **/

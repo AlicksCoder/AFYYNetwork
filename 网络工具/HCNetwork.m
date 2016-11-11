@@ -67,8 +67,8 @@ static UIView *_statusBar;
 }
 
 + (NSURLSessionDataTask *)POST:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure showHUD:(BOOL)showHUD useCache:(BOOL)useCache{
-    __block NSURLSessionDataTask *session = nil;
     
+    __block NSURLSessionDataTask *session = nil;
     if(showHUD) NSLog(@"显示 hud 改功能暂无，后续版本添加 加载中...");
     
     if (useCache) {
@@ -111,6 +111,35 @@ static UIView *_statusBar;
         failure ? failure(task,error) : 0;
     }];
     
+    [session resume];
+    return session;
+}
+
+
++(NSURLSessionDataTask *)GETNOCache:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure{
+     __block NSURLSessionDataTask *session = nil;
+    session = [_manager GET:URLString parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        success ? success(task,responseObject) : 0;
+        
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        failure ? failure(task,error) : 0;
+    }];
+    
+    [session resume];
+    return session;
+}
+
+
++(NSURLSessionDataTask *)POSTNOCache:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure{
+    __block NSURLSessionDataTask *session = nil;
+    session = [_manager POST:URLString parameters:parameters progress:^(NSProgress * _Nonnull uploadProgress) {
+    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        success ? success(session,responseObject) : 0;
+        
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        failure ? failure(session,error) : 0;
+    }];
+
     [session resume];
     return session;
 }
