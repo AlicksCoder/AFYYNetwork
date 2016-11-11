@@ -37,7 +37,7 @@ static NSTimeInterval HCRequestTimeout = 30.0f;    ///请求超时时间
 
 /**
  网页GET请求 (没网络会加载缓存)，用于请求网页数据，responseObject 返回的一般是html语言。
- 一般只会配合webview加载html语言显示网页。
+ 一般会配合webview加载html语言显示网页。
  */
 + (NSURLSessionDataTask *)WEBGET:(NSString *)URLString
                    parameters:(id)parameters

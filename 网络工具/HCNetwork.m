@@ -19,26 +19,28 @@ static AFNetworkReachabilityStatus _status = 0;
 static AFHTTPSessionManager *_webManager;
 
 @implementation HCNetwork
+#pragma mark -------------------------------- 初始化 --------------------------------
 + (void)initialize{
     [HCNetwork checkNetworkStatus];
     [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
-    AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-    manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-    manager.responseSerializer = [AFJSONResponseSerializer serializer];
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript", @"text/html", @"text/xml", @"text/plain", nil];
-    manager.requestSerializer.timeoutInterval = HCRequestTimeout;
-    _manager = manager;
-    [HCNetwork WebGetReady];
+    _manager = [HCNetwork setHttpSessionManagerType:YES];
+    _webManager = [HCNetwork setHttpSessionManagerType:NO];
 }
 
-+ (void)WebGetReady{
++ (AFHTTPSessionManager *)setHttpSessionManagerType:(BOOL)isJson{
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
     manager.requestSerializer = [AFHTTPRequestSerializer serializer];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    if (isJson) {
+        manager.responseSerializer = [AFJSONResponseSerializer serializer];
+    }else{
+        manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    }
     manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript", @"text/html", @"text/xml", @"text/plain", nil];
     manager.requestSerializer.timeoutInterval = HCRequestTimeout;
-    _webManager = manager;
+    return manager;
 }
+
+
 
 #pragma mark -------------------------------- 网络请求 --------------------------------
 +(NSURLSessionDataTask *)GET:(NSString *)URLString parameters:(id)parameters success:(void (^)(NSURLSessionDataTask *, id))success failure:(void (^)(NSURLSessionDataTask *, NSError *))failure showHUD:(BOOL)showHUD{
