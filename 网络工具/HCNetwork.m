@@ -15,13 +15,15 @@
 #import <arpa/inet.h>
 
 static AFHTTPSessionManager *_manager;
-static AFNetworkReachabilityStatus _status = 0;
 static AFHTTPSessionManager *_webManager;
+static AFNetworkReachabilityStatus _status = 0;
+static UIView *_statusBar;
 
 @implementation HCNetwork
 #pragma mark -------------------------------- 初始化 --------------------------------
 + (void)initialize{
     [HCNetwork checkNetworkStatus];
+    _statusBar = [HCNetwork initialStatusBar];
     [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
     _manager = [HCNetwork setHttpSessionManagerType:YES];
     _webManager = [HCNetwork setHttpSessionManagerType:NO];
@@ -119,6 +121,11 @@ static AFHTTPSessionManager *_webManager;
     AFNetworkReachabilityManager *mgr = [AFNetworkReachabilityManager sharedManager];
     [mgr setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
         _status = status;
+        if (status < 1) {
+            [HCNetwork showStatusBarWhenNotReachable:YES];
+        }else{
+            [HCNetwork showStatusBarWhenNotReachable:NO];
+        }
     }];
     [mgr startMonitoring];
     
@@ -172,6 +179,32 @@ static AFHTTPSessionManager *_webManager;
     BOOL needsConnection = ((flags & kSCNetworkFlagsConnectionRequired) != 0);
     return (isReachable && !needsConnection) ? YES : NO;
     
+}
+
+
+#pragma mark -------------------------------- 状态提示栏  --------------------------------
++ (void)showStatusBarWhenNotReachable:(BOOL)isShow;{
+    if (isShow && _statusBar.tag == 0) {
+        _statusBar.tag = 1;
+        [[UIApplication sharedApplication].keyWindow addSubview:_statusBar];
+    }else {
+        _statusBar.tag = 0;
+        [_statusBar removeFromSuperview];
+    }
+}
+
++ (UIView *)initialStatusBar{
+    UIView *bar = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 25)];
+    bar.backgroundColor = [UIColor blackColor];
+    UILabel *label = [[UILabel alloc] initWithFrame:bar.bounds];
+    label.textAlignment = NSTextAlignmentCenter;
+    label.text = @"网络中断";
+    label.textColor = [UIColor redColor];
+    label.font = [UIFont systemFontOfSize:14];
+    bar.tag = 0;
+    [bar addSubview:label];
+    
+    return bar;
 }
 
 
