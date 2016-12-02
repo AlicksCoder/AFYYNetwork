@@ -20,6 +20,15 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
 }
+- (IBAction)download:(id)sender {
+    [HCNetwork WEBGET:@"http://ceshimain.oss-cn-hangzhou.aliyuncs.com/TEST1117.amr" parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
+        NSLog(@"%@",responseObject);
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+         NSLog(@"%@",error);
+    } showHUD:NO];
+    
+    
+}
 
 - (IBAction)btn:(id)sender {
      

@@ -105,6 +105,10 @@ static UIView *_statusBar;
     if(showHUD)  NSLog(@"显示 hud 改功能暂无，后续版本添加 加载中...");
     
     session = [_webManager GET:URLString parameters:parameters progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        if ([[responseObject class] isSubclassOfClass:[NSData class]]) {
+            responseObject = [[NSString alloc]initWithData:responseObject encoding:NSUTF8StringEncoding];
+        }
+        
         success ? success(task,responseObject) : 0;
         [HCNetworkCache cacheResponseObject:responseObject requestUrl:URLString params:parameters];
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
